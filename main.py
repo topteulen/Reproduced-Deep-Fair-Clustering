@@ -75,7 +75,7 @@ def main():
     data_loader = mnist_usps(args)
     len_image_0 = len(data_loader[0])
     len_image_1 = len(data_loader[1])
-
+    print(len_image_0,args.iters, args.iters/len_image_0)
     for step in range(args.iters):
         encoder.train()
         dfc.train()
@@ -89,15 +89,12 @@ def main():
 
         image_0, image_1 = image_0.cuda(), image_1.cuda()
         image = torch.cat((image_0, image_1), dim=0)
-
         predict_0, predict_1 = dfc_group_0(encoder_group_0(image_0)[0]), dfc_group_1(encoder_group_1(image_1)[0])
 
         z, _, _ = encoder(image)
         output = dfc(z)
-
         output_0, output_1 = output[0:args.bs, :], output[args.bs:args.bs * 2, :]
         target_0, target_1 = target_distribution(output_0).detach(), target_distribution(output_1).detach()
-
         clustering_loss = 0.5 * criterion_c(output_0.log(), target_0) + 0.5 * criterion_c(output_1.log(), target_1)
         fair_loss = adv_loss(output, critic)
         partition_loss = 0.5 * criterion_p(aff(output_0), aff(predict_0).detach()) \
@@ -108,14 +105,16 @@ def main():
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
-
         C_LOSS.update(clustering_loss)
         F_LOSS.update(fair_loss)
         P_LOSS.update(partition_loss)
-
+        if step % 100 == 0:
+            print(step)
+            print(clustering_loss,fair_loss,partition_loss)
         if step % args.test_interval == args.test_interval - 1 or step == 0:
             predicted, labels = predict(data_loader, encoder, dfc)
             predicted, labels = predicted.cpu().numpy(), labels.numpy()
+            print(predicted.shape,labels.shape)
             _, accuracy = cluster_accuracy(predicted, labels, 10)
             nmi = normalized_mutual_info_score(labels, predicted, average_method="arithmetic")
             bal, en_0, en_1 = balance(predicted, 60000)

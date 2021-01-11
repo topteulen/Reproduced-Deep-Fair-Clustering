@@ -31,10 +31,18 @@ class digital(data.Dataset):
         return len(self.data_dir)
 
 
-def get_digital(args, subset):
-    transform = transforms.Compose([transforms.ToTensor(),
-                                    # transforms.Normalize((0.5,), (0.5,))
-                                    ])
+def get_digital(args, subset,resize=[]):
+    if len(resize) != 0:
+        transform = transforms.Compose([transforms.Pad(resize[0],0),
+                                        transforms.ToTensor(),
+                                        
+                                        # transforms.Normalize((0.5,), (0.5,))
+                                        ])
+    else:
+        transform = transforms.Compose([transforms.ToTensor(),
+                                        # transforms.Normalize((0.5,), (0.5,))
+                                        #transforms.Resize((resize[0],resize[1]))
+                                        ])
 
     data = digital(subset, transform)
     data_loader = torch.utils.data.DataLoader(
@@ -47,8 +55,8 @@ def get_digital(args, subset):
 
 
 def mnist_usps(args):
-    train_0 = get_digital(args, "train_mnist")
-    train_1 = get_digital(args, "train_usps")
+    train_0 = get_digital(args, "train_mnist", resize=[2])
+    train_1 = get_digital(args, "train_usps", resize=[8])
     train_data = [train_0, train_1]
 
     return train_data

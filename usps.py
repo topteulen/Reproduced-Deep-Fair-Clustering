@@ -5,7 +5,7 @@ import torch.utils.data as data
 import numpy as np
 import os
 
-root='./data'
+root='./data/digital/'
 batch_size=128
 num_workers=0
 #download from https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass.html#usps

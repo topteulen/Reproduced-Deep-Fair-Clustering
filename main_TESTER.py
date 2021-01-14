@@ -85,8 +85,16 @@ def main():
         if step % len_image_1 == 0:
             iter_image_1 = iter(data_loader[1])
 
-        image_0, _ = iter_image_0.__next__()
-        image_1, _ = iter_image_1.__next__()
+        image_0, test_0= iter_image_0.__next__()
+        image_1, test_1= iter_image_1.__next__()
+        #print(test_0,test_1)
+        test_target_0 = torch.zeros(len(test_0),10)
+        test_target_1 = torch.zeros(len(test_0),10)
+        for i in range(len(test_0)):
+            test_target_0[i][test_0[i]] = 1
+            test_target_1[i][test_0[i]] = 1
+        #print("a",zeros)
+        
         image_0, image_1 = image_0.cuda(), image_1.cuda()
         image = torch.cat((image_0, image_1), dim=0)
         predict_0, predict_1 = dfc_group_0(encoder_group_0(image_0)[0]), dfc_group_1(encoder_group_1(image_1)[0])
@@ -98,7 +106,8 @@ def main():
         # print(output_0.shape,target_0.shape)
         # print("OUT",output_0)
         # print("TARGET",target_0)
-        clustering_loss = 0.5 * criterion_c(output_0.log(), target_0) + 0.5 * criterion_c(output_1.log(), target_1)
+        #print(output_0.shape,test_target_0.shape)
+        clustering_loss = 0.5 * criterion_c(output_0.log(), test_target_0.cuda()) + 0.5 * criterion_c(output_1.log(), test_target_1.cuda())
         fair_loss = adv_loss(output, critic)
         partition_loss = 0.5 * criterion_p(aff(output_0), aff(predict_0).detach()) \
                          + 0.5 * criterion_p(aff(output_1), aff(predict_1).detach())
@@ -117,7 +126,6 @@ def main():
         if step % args.test_interval == args.test_interval - 1 or step == 0:
             predicted, labels = predict(data_loader, encoder, dfc)
             predicted, labels = predicted.cpu().numpy(), labels.numpy()
-
             print(predicted.shape,labels.shape)
             _, accuracy = cluster_accuracy(predicted, labels, 10)
             nmi = normalized_mutual_info_score(labels, predicted, average_method="arithmetic")

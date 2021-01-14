@@ -8,7 +8,7 @@ import torch
 from torch.utils import data
 from torchvision import transforms
 
-kwargs = {"shuffle": True, "num_workers": 4, "pin_memory": True, "drop_last": True}
+kwargs = {"shuffle": True, "num_workers": 0, "pin_memory": True, "drop_last": True}
 
 
 class digital(data.Dataset):
@@ -31,9 +31,9 @@ class digital(data.Dataset):
         return len(self.data_dir)
 
 
-def get_digital(args, subset,resize=[]):
+def get_digital(args, subset,resize=[],colour=0):
     if len(resize) != 0:
-        transform = transforms.Compose([transforms.Pad(resize[0],0),
+        transform = transforms.Compose([transforms.Pad(resize[0],colour),
                                         transforms.ToTensor(),
                                         
                                         # transforms.Normalize((0.5,), (0.5,))
@@ -55,8 +55,8 @@ def get_digital(args, subset,resize=[]):
 
 
 def mnist_usps(args):
-    train_0 = get_digital(args, "train_mnist", resize=[2])
-    train_1 = get_digital(args, "train_usps", resize=[8])
+    train_0 = get_digital(args, "train_mnist", resize=[2],colour=255)
+    train_1 = get_digital(args, "train_usps", resize=[8],colour=0)
     train_data = [train_0, train_1]
 
     return train_data

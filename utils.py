@@ -54,10 +54,22 @@ def target_distribution(batch):
 def aff(input):
     return torch.mm(input, torch.transpose(input, dim0=0, dim1=1))
 
+
 def JS_divergence(output, target):
+    "Calculates Jensen-Shannon divergence"
+
     KLD = nn.KLDivLoss(reduction='sum')
     M = 0.5 * (output + target)
     return 0.5 * KLD(output, M) + 0.5 * KLD(target, M)
+
+
+def CS_divergence(output, target):
+    "Calculates Cauchy-Schwarz divergence"
+
+    numerator = torch.sum(output * target)
+    denominator = torch.sqrt(torch.sum(output**2) * torch.sum(target**2))
+    return -torch.log(numerator / denominator)
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

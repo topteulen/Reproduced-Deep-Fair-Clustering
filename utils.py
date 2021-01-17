@@ -60,7 +60,7 @@ def JS_divergence(output, target):
 
     KLD = nn.KLDivLoss(reduction='sum')
     M = 0.5 * (output + target)
-    return 0.5 * KLD(output, M) + 0.5 * KLD(target, M)
+    return 0.5 * KLD(output.log(), M) + 0.5 * KLD(target.log(), M)
 
 
 def CS_divergence(output, target):

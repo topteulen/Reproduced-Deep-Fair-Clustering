@@ -56,7 +56,7 @@ class CorruptionTransform:
 
 
 
-def get_digital(args, subset,resize=[],colour=0,corruption=True):
+def get_digital(args, subset,resize=[],colour=0,corruption=False):
     if len(resize) != 0:
         if corruption == True:
             if 1 > args.corrupted > 0:

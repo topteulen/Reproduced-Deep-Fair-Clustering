@@ -50,7 +50,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
         def __init__(self):
-            super(Encoder, self).__init__()
+            super(Decoder, self).__init__()
             self.lin = nn.Linear(64, 512),
             self.conv4 = nn.ConvTranspose2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)
             self.bn4 = nn.BatchNorm2d(16)

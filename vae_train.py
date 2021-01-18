@@ -25,10 +25,19 @@ from torchvision.utils import make_grid, save_image
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from bmnist import bmnist
-from mlp_encoder_decoder import MLPEncoder, MLPDecoder
-from cnn_encoder_decoder import CNNEncoder, CNNDecoder
-from utils import *
+from vae_utils import *
+from vae_modules import Encoder, Decoder
+
+import inspect
+import sys
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir) 
+from dataloader import *
+
+# from bmnist import bmnist
+
+
 
 
 class VAE(pl.LightningModule):
@@ -45,12 +54,10 @@ class VAE(pl.LightningModule):
         """
         super().__init__()
         self.save_hyperparameters()
-        # if model_name == 'MLP':
-        self.encoder = MLPEncoder(z_dim=z_dim, hidden_dims=hidden_dims)
-        self.decoder = MLPDecoder(z_dim=z_dim, hidden_dims=hidden_dims[::-1])
-        # else:
-        #     self.encoder = CNNEncoder(z_dim=z_dim, num_filters=num_filters)
-        #     self.decoder = CNNDecoder(z_dim=z_dim, num_filters=num_filters)
+
+        self.encoder = Encoder()
+        self.decoder = Decoder()
+
 
         self.criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
 
@@ -85,18 +92,18 @@ class VAE(pl.LightningModule):
         return L_rec, L_reg, bpd
 
     @torch.no_grad()
-    def sample(self, batch_size):
+    def sample(self, bs):
         """
         Function for sampling a new batch of random images.
         Inputs:
-            batch_size - Number of images to generate
+            bs - Number of images to generate
         Outputs:
             x_samples - Sampled, binarized images with 0s and 1s. Shape: [B,C,H,W]
             x_mean - The sigmoid output of the decoder with continuous values
                      between 0 and 1 from which we obtain "x_samples".
                      Shape: [B,C,H,W]
         """
-        z = torch.randn(batch_size, args.z_dim).to(self.decoder.device)
+        z = torch.randn(bs, args.z_dim).to(self.decoder.device)
 
         y = self.decoder(z)
 
@@ -137,15 +144,15 @@ class VAE(pl.LightningModule):
 
 # class GenerateCallback(pl.Callback):
 
-#     def __init__(self, batch_size=64, every_n_epochs=5, save_to_disk=False):
+#     def __init__(self, bs=64, every_n_epochs=5, save_to_disk=False):
 #         """
 #         Inputs:
-#             batch_size - Number of images to generate
+#             bs - Number of images to generate
 #             every_n_epochs - Only save those images every N epochs (otherwise tensorboard gets quite large)
 #             save_to_disk - If True, the samples and image means should be saved to disk as well.
 #         """
 #         super().__init__()
-#         self.batch_size = batch_size
+#         self.bs = bs
 #         self.every_n_epochs = every_n_epochs
 #         self.save_to_disk = save_to_disk
 
@@ -199,13 +206,15 @@ def train_vae(args):
     """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # os.makedirs(args.log_dir, exist_ok=True)
-    train_loader, val_loader, test_loader = #DATALOADER
+    os.makedirs(args.log_dir, exist_ok=True)
+    # train_loader, val_loader, test_loader = #DATALOADER
+    data_loader = mnist_Rmnist(args)[1]
+    train_loader, val_loader, test_loader = data_loader, data_loader, data_loader
 
     # Create a PyTorch Lightning trainer with the generation callback
     # gen_callback = GenerateCallback(save_to_disk=True)
     trainer = pl.Trainer(default_root_dir=args.log_dir,
-                         checkpoint_callback=ModelCheckpoint(save_weights_only=True, mode="min", monitor="val_bpd"),
+                        #  checkpoint_callback=ModelCheckpoint(save_weights_only=True, mode="min", monitor="val_bpd"),
                          gpus=1 if torch.cuda.is_available() else 0,
                          max_epochs=args.epochs,
                         #  callbacks=[gen_callback],
@@ -257,7 +266,7 @@ if __name__ == '__main__':
     # Optimizer hyperparameters
     parser.add_argument('--lr', default=1e-3, type=float,
                         help='Learning rate to use')
-    parser.add_argument('--batch_size', default=128, type=int,
+    parser.add_argument('--bs', default=128, type=int,
                         help='Minibatch size')
 
     # Other hyperparameters
@@ -273,7 +282,9 @@ if __name__ == '__main__':
     parser.add_argument('--progress_bar', action='store_true',
                         help=('Use a progress bar indicator for interactive experimentation. '
                               'Not to be used in conjuction with SLURM jobs'))
-
+    parser.add_argument('--corrupted', default=False,
+                        help='Corrupted'
+                        )
     args = parser.parse_args()
 
     train_vae(args)

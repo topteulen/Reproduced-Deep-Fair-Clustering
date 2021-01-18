@@ -3,6 +3,7 @@
 
 import argparse
 import numpy as np
+import pickle
 from sklearn.metrics import normalized_mutual_info_score
 
 import torch
@@ -24,6 +25,7 @@ parser.add_argument("--coeff_fair", type=float, default=1.0)
 parser.add_argument("--coeff_par", type=float, default=1.0)
 parser.add_argument("--gpu", type=int, default=0)
 parser.add_argument("--seed", type=int, default=2019)
+parser.add_argument("--corrupted",type=float, default=0)
 args = parser.parse_args()
 
 
@@ -77,6 +79,12 @@ def main():
     len_image_0 = len(data_loader[0])
     len_image_1 = len(data_loader[1])
     print(len_image_0,args.iters, args.iters/len_image_0)
+    
+    acc_list = []
+    nmi_list = []
+    bal_list = []
+    en0_list = []
+    en1_list = []
     for step in range(args.iters):
         encoder.train()
         dfc.train()
@@ -132,7 +140,21 @@ def main():
                   "F.loss:{F_Loss.avg:3.2f};"
                   "P.loss:{P_Loss.avg:3.2f};".format(step + 1, args.iters, accuracy, nmi, bal, en_0,
                                                      en_1, C_Loss=C_LOSS, F_Loss=F_LOSS, P_Loss=P_LOSS))
-
+            acc_list += [str(accuracy)]
+            nmi_list += [str(nmi)]
+            bal_list += [str(bal)]
+            en0_list += [str(en_0)]
+            en1_list += [str(en_1)]
+    file = open("results.txt", "a")
+    file.writelines(acc_list)
+    file.write('\n')
+    file.writelines(nmi_list)
+    file.write('\n')
+    file.writelines(bal_list)
+    file.write('\n')
+    file.writelines(en0_list)
+    file.write('\n')
+    file.writelines(en1_list)
     return
 
 

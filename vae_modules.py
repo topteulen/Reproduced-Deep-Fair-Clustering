@@ -51,15 +51,16 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
         def __init__(self):
             super(Decoder, self).__init__()
-            self.lin = nn.Linear(64, 512),
-            self.conv4 = nn.ConvTranspose2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)
+            self.lin = nn.Linear(64, 512)
+            self.conv1 = nn.ConvTranspose2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)
             self.bn4 = nn.BatchNorm2d(16)
-            self.conv3 = nn.ConvTranspose2d(16, 32, kernel_size=3, stride=2, padding=1, bias=False)
+            self.conv2 = nn.ConvTranspose2d(16, 32, kernel_size=3, stride=2, padding=1, bias=False)
             self.bn3 = nn.BatchNorm2d(32)
-            self.conv2 = nn.ConvTranspose2d(32, 32, kernel_size=3, stride=1, padding=1, bias=False)
-            self.bn2 = nn.BatchNorm2d(32)
-            self.conv1 = nn.ConvTranspose2d(32, 16, kernel_size=3, stride=2, padding=1, bias=False)
-            self.bn1 = nn.BatchNorm2d(16)
+            self.conv3 = nn.ConvTranspose2d(32, 32, kernel_size=3, stride=1, padding=1, bias=False)
+            # self.fc1 = nn.Linear(8 * 8 * 16, 512)
+            # self.fc_bn1 = nn.BatchNorm1d(512)
+            # self.fc21 = nn.Linear(512, 64)
+            # self.fc22 = nn.Linear(512, 64)
     
             # self.fc1 = nn.Linear(8 * 8 * 16, 512)
             # self.fc_bn1 = nn.BatchNorm1d(512)

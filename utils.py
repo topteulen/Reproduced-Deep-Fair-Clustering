@@ -55,6 +55,12 @@ def aff(input):
     return torch.mm(input, torch.transpose(input, dim0=0, dim1=1))
 
 
+def KL_divergence(output, target):
+    'Wrapper function that calculates the KL-divergence'
+    KLD = nn.KLDivLoss(reduction='sum')
+    return KLD(output.log(), target)
+
+
 def JS_divergence(output, target):
     "Calculates Jensen-Shannon divergence"
 

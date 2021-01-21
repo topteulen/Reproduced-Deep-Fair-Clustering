@@ -51,16 +51,16 @@ def main():
 
     # encoder and clustering model trained by DEC
     encoder_group_0.load_state_dict(torch.load("./save/encoder_mnist.pth"))
-    encoder_group_1.load_state_dict(torch.load("./save/encoder_mnist.pth"))
+    encoder_group_1.load_state_dict(torch.load("./save/encoder_Rmnist.pth"))
     dfc_group_0.load_state_dict(torch.load("./save/dec_mnist.pth"))
-    dfc_group_1.load_state_dict(torch.load("./save/dec_mnist.pth"))
+    # dfc_group_1.load_state_dict(torch.load("./save/dec_mnist.pth"))
 
     # load clustering centroids given by k-means
-    centers = np.loadtxt("./save/centers.txt")
-    cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
-    with torch.no_grad():
-        print("loading clustering centers...")
-        dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
+    # centers = np.loadtxt("./save/centers.txt")
+    # cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
+    # with torch.no_grad():
+    #     print("loading clustering centers...")
+    #     dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
 
     optimizer = torch.optim.Adam(dfc.get_parameters() + encoder.get_parameters() + critic.get_parameters(),
                                  lr=args.lr,
@@ -144,18 +144,16 @@ def main():
             bal_list += [bal]
             en0_list += [en_0]
             en1_list += [en_1]
-    f = open("results.txt", "a")
-    f.write(acc_list)
-    f.write("\n")
-    f.write(nmi_list)
-    f.write("\n")
-    f.write(bal_list)
-    f.write("\n")
-    f.write(en0_list)
-    f.write("\n")
-    f.write(en1_list)
-    f.write("\n")
-    f.close()
+    file = open("results_new.txt", "a")
+    file.writelines(acc_list)
+    file.write('\n')
+    file.writelines(nmi_list)
+    file.write('\n')
+    file.writelines(bal_list)
+    file.write('\n')
+    file.writelines(en0_list)
+    file.write('\n')
+    file.writelines(en1_list)
     return
 
 

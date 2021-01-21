@@ -145,7 +145,7 @@ def main():
             bal_list += [str(bal)]
             en0_list += [str(en_0)]
             en1_list += [str(en_1)]
-    file = open("results.txt", "a")
+    file = open("results_new.txt", "a")
     file.writelines(acc_list)
     file.write('\n')
     file.writelines(nmi_list)

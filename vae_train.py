@@ -243,7 +243,8 @@ def train_vae(args):
         save_image(img_grid,
                    os.path.join(trainer.logger.log_dir, 'vae_manifold.png'),
                    normalize=False)
-
+    torch.save(model.encoder.state_dict(), "./save/encoder_Rmnist.pth")
+    torch.save(model.decoder.state_dict(), "./save/decoder_Rmnist.pth")
     return test_result
 
 # torch.autograd.set_detect_anomaly(True)

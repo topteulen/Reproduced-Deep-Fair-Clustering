@@ -70,8 +70,7 @@ def get_digital(args, subset,resize=[],colour=0,corruption=False):
                                             ])
 
     else:
-        transform = transforms.Compose([transforms.Pad(resize[0],colour),
-                                        transforms.ToTensor(),
+        transform = transforms.Compose([transforms.ToTensor(),
                                         # transforms.Normalize((0.5,), (0.5,))
                                         #transforms.Resize((resize[0],resize[1]))
                                         ])
@@ -87,7 +86,7 @@ def get_digital(args, subset,resize=[],colour=0,corruption=False):
 
 
 def mnist_usps(args):
-    train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=True)
+    train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=False)
     train_1 = get_digital(args, "train_usps", resize=[8],colour=0,corruption=False)
     train_data = [train_0, train_1]
 

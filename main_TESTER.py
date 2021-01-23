@@ -56,11 +56,11 @@ def main():
     # dfc_group_1.load_state_dict(torch.load("./save/dec_mnist.pth"))
 
     # load clustering centroids given by k-means
-    # centers = np.loadtxt("./save/centers.txt")
-    # cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
-    # with torch.no_grad():
-    #     print("loading clustering centers...")
-    #     dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
+    centers = np.loadtxt("./kmeans.txt")
+    cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
+    with torch.no_grad():
+        print("loading clustering centers...")
+        dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
 
     optimizer = torch.optim.Adam(dfc.get_parameters() + encoder.get_parameters() + critic.get_parameters(),
                                  lr=args.lr,
@@ -139,11 +139,12 @@ def main():
                   "F.loss:{F_Loss.avg:3.2f};"
                   "P.loss:{P_Loss.avg:3.2f};".format(step + 1, args.iters, accuracy, nmi, bal, en_0,
                                                      en_1, C_Loss=C_LOSS, F_Loss=F_LOSS, P_Loss=P_LOSS))
-            acc_list += [accuracy]
-            nmi_list += [nmi]
-            bal_list += [bal]
-            en0_list += [en_0]
-            en1_list += [en_1]
+            acc_list += [str(accuracy)]
+            nmi_list += [str(nmi)]
+            bal_list += [str(bal)]
+            en0_list += [str(en_0)]
+            en1_list += [str(en_1)]
+
     file = open("results_new.txt", "a")
     file.writelines(acc_list)
     file.write('\n')

@@ -53,15 +53,15 @@ def main():
     # encoder and clustering model trained by DEC
     encoder_group_0.load_state_dict(torch.load("./save/encoder_mnist.pth"))
     encoder_group_1.load_state_dict(torch.load("./save/encoder_usps.pth"))
-    dfc_group_0.load_state_dict(torch.load("./save/dec_mnist.pth"))
-    dfc_group_1.load_state_dict(torch.load("./save/dec_usps.pth"))
+    # dfc_group_0.load_state_dict(torch.load("./save/dec_mnist.pth"))
+    # dfc_group_1.load_state_dict(torch.load("./save/dec_usps.pth"))
 
     # load clustering centroids given by k-means
-    centers = np.loadtxt("./save/centers.txt")
-    cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
-    with torch.no_grad():
-        print("loading clustering centers...")
-        dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
+    # centers = np.loadtxt("./save/centers.txt")
+    # cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
+    # with torch.no_grad():
+    #     print("loading clustering centers...")
+    #     dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
 
     optimizer = torch.optim.Adam(dfc.get_parameters() + encoder.get_parameters() + critic.get_parameters(),
                                  lr=args.lr,

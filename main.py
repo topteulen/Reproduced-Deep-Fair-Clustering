@@ -64,7 +64,7 @@ def main():
         
     elif args.dataset == "Rmnist":
         encoder_group_1.load_state_dict(torch.load("./save/encoder_Rmnist.pth"))
-        centers = np.loadtxt("./kmeans.txt")
+        centers = np.loadtxt("./save/centers_Rmnist.txt")
         #data loader
         data_loader = mnist_Rmnist(args)
         

@@ -76,6 +76,36 @@ def CS_divergence(output, target):
     denominator = torch.sqrt(torch.sum(output**2) * torch.sum(target**2))
     return -torch.log(numerator / denominator)
 
+def K_means(args):
+    POOL = nn.MaxPool2d(4)
+    args.bs = 512
+    data_loader = mnist_usps(args)
+    kmeans = sk.MiniBatchKMeans(10,max_iter=1000,batch_size=args.bs)
+    len_image_0 = len(data_loader[0])
+    len_image_1 = len(data_loader[1])
+    for step in range(int(60000/args.bs)):
+        if step % len_image_0 == 0:
+            iter_image_0 = iter(data_loader[0])
+        if step % len_image_1 == 0:
+            iter_image_1 = iter(data_loader[1])
+            
+        image_0, _ = iter_image_0.__next__()
+        image_1, _ = iter_image_1.__next__()
+        image_0 = POOL(image_0)
+        image_1 = POOL(image_1)
+        image_0 = image_0.reshape(args.bs,-1)
+        image_1 = image_1.reshape(args.bs,-1)
+        kmeans = kmeans.partial_fit(image_0)
+        kmeans = kmeans.partial_fit(image_1)
+        if step % 10 == 0:
+            print(step, int(60000/args.bs))
+    clusters = kmeans.cluster_centers_
+    open("/save/centers_Rmnist.txt", "w")
+    file = open("/save/centers_Rmnist.txt", "a")
+    for i in range(len(clusters)):
+        file.writelines([str(item)+" " for item in clusters[i]])
+        file.writelines("\n")
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

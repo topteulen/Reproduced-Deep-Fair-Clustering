@@ -3,13 +3,12 @@
 
 import argparse
 import numpy as np
-import pickle
 from sklearn.metrics import normalized_mutual_info_score
 
 import torch
 from torch import nn
 
-from dataloader import mnist_usps
+from dataloader import mnist_usps,mnist_Rmnist
 from module import Encoder, AdversarialNetwork, DFC, adv_loss
 from eval import predict, cluster_accuracy, balance
 from utils import set_seed, AverageMeter, target_distribution, aff, inv_lr_scheduler
@@ -26,6 +25,8 @@ parser.add_argument("--coeff_par", type=float, default=1.0)
 parser.add_argument("--gpu", type=int, default=0)
 parser.add_argument("--seed", type=int, default=2019)
 parser.add_argument("--corrupted",type=float, default=0)
+parser.add_argument("--corrupted_set",type=int, default=0)
+parser.add_argument("--dataset",type=str, default="usps")
 args = parser.parse_args()
 
 
@@ -52,20 +53,31 @@ def main():
 
     # encoder and clustering model trained by DEC
     encoder_group_0.load_state_dict(torch.load("./save/encoder_mnist.pth"))
-    encoder_group_1.load_state_dict(torch.load("./save/encoder_usps.pth"))
-    # dfc_group_0.load_state_dict(torch.load("./save/dec_mnist.pth"))
-    # dfc_group_1.load_state_dict(torch.load("./save/dec_usps.pth"))
-
-    # load clustering centroids given by k-means
-    # centers = np.loadtxt("./save/centers.txt")
-    # cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
-    # with torch.no_grad():
-    #     print("loading clustering centers...")
-    #     dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
+    dfc_group_0.load_state_dict(torch.load("./save/dec_mnist.pth"))
+    #dataset dependend variables
+    if args.dataset == "usps":
+        encoder_group_1.load_state_dict(torch.load("./save/encoder_usps.pth"))
+        dfc_group_1.load_state_dict(torch.load("./save/dec_usps.pth"))
+        centers = np.loadtxt("./save/centers.txt")
+        #data loader
+        data_loader = mnist_usps(args)
+        
+    elif args.dataset == "Rmnist":
+        encoder_group_1.load_state_dict(torch.load("./save/encoder_Rmnist.pth"))
+        centers = np.loadtxt("./kmeans.txt")
+        #data loader
+        data_loader = mnist_Rmnist(args)
+        
+    #load clustering centroids given by k-means    
+    cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
+    with torch.no_grad():
+        print("loading clustering centers...")
+        dfc.state_dict()['assignment.cluster_centers'].copy_(cluster_centers)
 
     optimizer = torch.optim.Adam(dfc.get_parameters() + encoder.get_parameters() + critic.get_parameters(),
                                  lr=args.lr,
                                  weight_decay=5e-4)
+                                 
     criterion_c = nn.KLDivLoss(reduction="sum")
     criterion_p = nn.MSELoss(reduction="sum")
     C_LOSS = AverageMeter()
@@ -75,7 +87,7 @@ def main():
     encoder_group_0.eval(), encoder_group_1.eval()
     dfc_group_0.eval(), dfc_group_1.eval()
 
-    data_loader = mnist_usps(args)
+    
     len_image_0 = len(data_loader[0])
     len_image_1 = len(data_loader[1])
     print(len_image_0,args.iters, args.iters/len_image_0)
@@ -103,9 +115,7 @@ def main():
         output = dfc(z)
         output_0, output_1 = output[0:args.bs, :], output[args.bs:args.bs * 2, :]
         target_0, target_1 = target_distribution(output_0).detach(), target_distribution(output_1).detach()
-        # print(output_0.shape,target_0.shape)
-        # print("OUT",output_0)
-        # print("TARGET",target_0)
+
         clustering_loss = 0.5 * criterion_c(output_0.log(), target_0) + 0.5 * criterion_c(output_1.log(), target_1)
         fair_loss = adv_loss(output, critic)
         partition_loss = 0.5 * criterion_p(aff(output_0), aff(predict_0).detach()) \
@@ -121,16 +131,20 @@ def main():
         P_LOSS.update(partition_loss)
         if step % 100 == 0:
             print(step)
-            print(clustering_loss,fair_loss,partition_loss)
         if step % args.test_interval == args.test_interval - 1 or step == 0:
+            if args.corrupted != 0 :
+                torch.save(critic.state_dict(), "./save/critic_Cor"+str(args.corrupted)+"_R+mnist"+str(step)+".pth")
+                torch.save(dfc.state_dict(), "./save/dfc_Cor"+str(args.corrupted)+"_R+mnist"+str(step)+".pth")
+                torch.save(encoder.state_dict(), "./save/encoder_Cor"+str(args.corrupted)+"_R+mnist"+str(step)+".pth")
+            else:
+                torch.save(critic.state_dict(), "./save/critic_mnist"+str(step)+".pth")
+                torch.save(dfc.state_dict(), "./save/dfc_mnist"+str(step)+".pth")
+                torch.save(encoder.state_dict(), "./save/encoder_mnist"+str(step)+".pth")
             predicted, labels = predict(data_loader, encoder, dfc)
             predicted, labels = predicted.cpu().numpy(), labels.numpy()
-
-            print(predicted.shape,labels.shape)
             _, accuracy = cluster_accuracy(predicted, labels, 10)
             nmi = normalized_mutual_info_score(labels, predicted, average_method="arithmetic")
             bal, en_0, en_1 = balance(predicted, 60000)
-
             print("Step:[{:03d}/{:03d}]  "
                   "Acc:{:2.3f};"
                   "NMI:{:1.3f};"
@@ -140,11 +154,12 @@ def main():
                   "F.loss:{F_Loss.avg:3.2f};"
                   "P.loss:{P_Loss.avg:3.2f};".format(step + 1, args.iters, accuracy, nmi, bal, en_0,
                                                      en_1, C_Loss=C_LOSS, F_Loss=F_LOSS, P_Loss=P_LOSS))
-            acc_list += [str(accuracy)]
-            nmi_list += [str(nmi)]
-            bal_list += [str(bal)]
-            en0_list += [str(en_0)]
-            en1_list += [str(en_1)]
+            acc_list += [str(accuracy) + " "]
+            nmi_list += [str(nmi)+ " "]
+            bal_list += [str(bal) + " "]
+            en0_list += [str(en_0)+ " "]
+            en1_list += [str(en_1)+ " "]
+        
     file = open("results_new.txt", "a")
     file.writelines(acc_list)
     file.write('\n')

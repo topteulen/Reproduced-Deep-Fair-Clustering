@@ -46,8 +46,6 @@ class CorruptionTransform:
         length = len(img)
         for x in range(length):
             chance = np.random.rand(length)
-            # if chance > self.percent:
-            #     if base_color == img[x][y]:
             img[x][chance > self.percent] = 255-base_color
 
         img = Image.fromarray(img)
@@ -56,24 +54,20 @@ class CorruptionTransform:
 
 
 
-def get_digital(args, subset,resize=[],colour=0,corruption=False):
-    if len(resize) != 0:
-        if corruption == True:
-            if 1 > args.corrupted > 0:
-                transform = transforms.Compose([transforms.Pad(resize[0],colour),
-                                                CorruptionTransform(args.corrupted),
-                                                transforms.ToTensor(),
-                                            ])
-        else:
+def get_digital(args, subset,resize=[0],colour=0,corruption=False):
+    if corruption == True:
+        if 1 > args.corrupted > 0:
             transform = transforms.Compose([transforms.Pad(resize[0],colour),
+                                            CorruptionTransform(args.corrupted),
                                             transforms.ToTensor(),
-                                            ])
-
-    else:
-        transform = transforms.Compose([transforms.ToTensor(),
-                                        # transforms.Normalize((0.5,), (0.5,))
-                                        #transforms.Resize((resize[0],resize[1]))
                                         ])
+        else:
+            print("give args.corrupted a correct values please")
+    else:
+        transform = transforms.Compose([transforms.Pad(resize[0],colour),
+                                        transforms.ToTensor(),
+                                        ])
+
 
     data = digital(subset, transform)
     data_loader = torch.utils.data.DataLoader(
@@ -86,16 +80,38 @@ def get_digital(args, subset,resize=[],colour=0,corruption=False):
 
 
 def mnist_usps(args):
-    train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=False)
-    train_1 = get_digital(args, "train_usps", resize=[8],colour=0,corruption=False)
+    if args.corrupted != 0:
+        if  args.corrupted_set == 0:
+            train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=True)
+            train_1 = get_digital(args, "train_usps", resize=[8],colour=0,corruption=False)
+        elif args.corrupted_set == 1:
+            train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=False)
+            train_1 = get_digital(args, "train_usps", resize=[8],colour=0,corruption=True)
+        else:
+            train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=True)
+            train_1 = get_digital(args, "train_usps", resize=[8],colour=0,corruption=True)
+    else:
+        train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=False)
+        train_1 = get_digital(args, "train_usps", resize=[8],colour=0,corruption=False)
+        
     train_data = [train_0, train_1]
-
     return train_data
     
 def mnist_Rmnist(args):
-    train_0 = get_digital(args, "train_mnist", resize=[2],colour=0)
-    train_1 = get_digital(args, "train_Rmnist", resize=[2],colour=255)
+    if args.corrupted != 0:
+        if  args.corrupted_set == 0:
+            train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=True)
+            train_1 = get_digital(args, "train_Rmnist", resize=[2],colour=255,corruption=False)
+        elif args.corrupted_set == 1:
+            train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=False)
+            train_1 = get_digital(args, "train_Rmnist", resize=[2],colour=255,corruption=True)
+        else:
+            train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=True)
+            train_1 = get_digital(args, "train_Rmnist", resize=[2],colour=255,corruption=True)
+    else:
+        train_0 = get_digital(args, "train_mnist", resize=[2],colour=0,corruption=False)
+        train_1 = get_digital(args, "train_Rmnist", resize=[2],colour=255,corruption=False)
+        
     train_data = [train_0, train_1]
-
     return train_data
 

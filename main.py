@@ -133,9 +133,9 @@ def main():
             print(step)
         if step % args.test_interval == args.test_interval - 1 or step == 0:
             if args.corrupted != 0 :
-                torch.save(critic.state_dict(), "./save/critic_Cor"+str(args.corrupted)+"_"+args.dataset + "_" + str(args.corrupted) +str(step)+".pth")
-                torch.save(dfc.state_dict(), "./save/dfc_Cor"+str(args.corrupted)+"_"+args.dataset+"_" + str(args.corrupted)+ str(step)+".pth")
-                torch.save(encoder.state_dict(), "./save/encoder_Cor"+str(args.corrupted)+"_"+args.dataset+"_" + str(args.corrupted)+str(step)+".pth")
+                torch.save(critic.state_dict(), "./save/critic_Cor"+str(args.corrupted)+"_"+args.dataset + "_" + str(args.corrupted_set) +"_"+ str(step)+".pth")
+                torch.save(dfc.state_dict(), "./save/dfc_Cor"+str(args.corrupted)+"_"+args.dataset+"_" + str(args.corrupted_set)+"_"+ str(step)+ ".pth")
+                torch.save(encoder.state_dict(), "./save/encoder_Cor"+str(args.corrupted)+"_"+args.dataset+"_" + str(args.corrupted_set)+"_"+str(step)+ ".pth")
             else:
                 torch.save(critic.state_dict(), "./save/critic_"+args.dataset + str(step)+".pth")
                 torch.save(dfc.state_dict(), "./save/dfc_"+args.dataset +str(step)+".pth")

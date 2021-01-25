@@ -133,13 +133,13 @@ def main():
             print(step)
         if step % args.test_interval == args.test_interval - 1 or step == 0:
             if args.corrupted != 0 :
-                torch.save(critic.state_dict(), "./save/critic_Cor"+str(args.corrupted)+"_"+args.dataset + "_" + args.corrupted+str(step)+".pth")
+                torch.save(critic.state_dict(), "./save/critic_Cor"+str(args.corrupted)+"_"+args.dataset + "_" + args.corrupted +str(step)+".pth")
                 torch.save(dfc.state_dict(), "./save/dfc_Cor"+str(args.corrupted)+"_"+args.dataset+"_" + args.corrupted+ str(step)+".pth")
                 torch.save(encoder.state_dict(), "./save/encoder_Cor"+str(args.corrupted)+"_"+args.dataset+"_" + args.corrupted+str(step)+".pth")
             else:
                 torch.save(critic.state_dict(), "./save/critic_"+args.dataset + str(step)+".pth")
                 torch.save(dfc.state_dict(), "./save/dfc_"+args.dataset +str(step)+".pth")
-                torch.save(encoder.state_dict(), "./save/encoder_"+args.dataset"+str(step)+".pth")
+                torch.save(encoder.state_dict(), "./save/encoder_"+args.dataset +str(step)+".pth")
             predicted, labels = predict(data_loader, encoder, dfc)
             predicted, labels = predicted.cpu().numpy(), labels.numpy()
             _, accuracy = cluster_accuracy(predicted, labels, 10)

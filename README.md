@@ -8,8 +8,7 @@ Anaconda: https://www.anaconda.com/distribution/
 ### Getting Started
 First open the Anaconda prompt, clone the entire repository and move to this directory:
 ```bash
-git clone https://github.com/uva-fact-ai-course/uva-fact-ai-course
-cd AdversarialDebiasing
+git clone https://github.com/topteulen/UVA-FACT.git
 ```
 
 Then create and activate the environment with the following commands:

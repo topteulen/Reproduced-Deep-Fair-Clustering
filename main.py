@@ -11,7 +11,7 @@ from torch import nn
 from dataloader import mnist_usps,mnist_Rmnist
 from module import Encoder, AdversarialNetwork, DFC, adv_loss
 from eval import predict, cluster_accuracy, balance
-from utils import set_seed, AverageMeter, target_distribution, aff, inv_lr_scheduler
+from utils import set_seed, AverageMeter, target_distribution, aff, inv_lr_scheduler, KL_divergence, JS_divergence, CS_divergence
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--bs", type=int, default=512)
@@ -27,6 +27,7 @@ parser.add_argument("--seed", type=int, default=2019)
 parser.add_argument("--corrupted",type=float, default=0)
 parser.add_argument("--corrupted_set",type=int, default=0)
 parser.add_argument("--dataset",type=str, default="usps")
+parser.add_argument("--divergence", type=str, default="KL")
 args = parser.parse_args()
 
 
@@ -61,14 +62,14 @@ def main():
         centers = np.loadtxt("./save/centers.txt")
         #data loader
         data_loader = mnist_usps(args)
-        
+
     elif args.dataset == "Rmnist":
         encoder_group_1.load_state_dict(torch.load("./save/encoder_Rmnist.pth"))
         centers = np.loadtxt("./save/centers_Rmnist.txt")
         #data loader
         data_loader = mnist_Rmnist(args)
-        
-    #load clustering centroids given by k-means    
+
+    #load clustering centroids given by k-means
     cluster_centers = torch.tensor(centers, dtype=torch.float, requires_grad=True).cuda()
     with torch.no_grad():
         print("loading clustering centers...")
@@ -77,8 +78,15 @@ def main():
     optimizer = torch.optim.Adam(dfc.get_parameters() + encoder.get_parameters() + critic.get_parameters(),
                                  lr=args.lr,
                                  weight_decay=5e-4)
-                                 
-    criterion_c = nn.KLDivLoss(reduction="sum")
+
+    criterion_c = ""
+    if args.divergence == "JS":
+        criterion_c = JS_divergence
+    elif args.divergence == "CS":
+        criterion_c = CS_divergence
+    elif args.divergence == "KL":
+        criterion_c = KL_divergence
+
     criterion_p = nn.MSELoss(reduction="sum")
     C_LOSS = AverageMeter()
     F_LOSS = AverageMeter()
@@ -87,11 +95,11 @@ def main():
     encoder_group_0.eval(), encoder_group_1.eval()
     dfc_group_0.eval(), dfc_group_1.eval()
 
-    
+
     len_image_0 = len(data_loader[0])
     len_image_1 = len(data_loader[1])
     print(len_image_0,args.iters, args.iters/len_image_0)
-    
+
     acc_list = []
     nmi_list = []
     bal_list = []
@@ -116,7 +124,7 @@ def main():
         output_0, output_1 = output[0:args.bs, :], output[args.bs:args.bs * 2, :]
         target_0, target_1 = target_distribution(output_0).detach(), target_distribution(output_1).detach()
 
-        clustering_loss = 0.5 * criterion_c(output_0.log(), target_0) + 0.5 * criterion_c(output_1.log(), target_1)
+        clustering_loss = 0.5 * criterion_c(output_0, target_0) + 0.5 * criterion_c(output_1, target_1)
         fair_loss = adv_loss(output, critic)
         partition_loss = 0.5 * criterion_p(aff(output_0), aff(predict_0).detach()) \
                          + 0.5 * criterion_p(aff(output_1), aff(predict_1).detach())
@@ -159,7 +167,7 @@ def main():
             bal_list += [str(bal) + " "]
             en0_list += [str(en_0)+ " "]
             en1_list += [str(en_1)+ " "]
-        
+
     file = open("results_new.txt", "a")
     file.writelines(acc_list)
     file.write('\n')

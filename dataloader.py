@@ -47,7 +47,7 @@ class CorruptionTransform:
         for x in range(length):
             chance = np.random.rand(length)
             img[x][chance > self.percent] = 255-base_color
-
+        
         img = Image.fromarray(img)
         return img
 

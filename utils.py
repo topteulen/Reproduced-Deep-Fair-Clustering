@@ -1,6 +1,9 @@
 # @Author  : Peizhao Li
 # @Contact : peizhaoli05@gmail.com
-
+"""
+here the weight initialisation,learning_rate schedulere and 
+the cluster divergence regularization functions are implemented. 
+"""
 import random
 import numpy as np
 import torch
@@ -8,6 +11,9 @@ from torch import nn
 
 
 def set_seed(seed):
+    """
+    setting the seeds to allow reproducability
+    """
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -20,6 +26,9 @@ def set_seed(seed):
 
 
 def init_weights(layer):
+    """
+    initialisation of the weitgths in the neural networks
+    """
     layer_name = layer.__class__.__name__
     if layer_name.find("Conv2d") != -1 or layer_name.find("ConvTranspose2d") != -1:
         nn.init.kaiming_uniform_(layer.weight)
@@ -77,35 +86,43 @@ def CS_divergence(output, target):
     return -torch.log(numerator / denominator)
 
 def K_means(args):
+    #pooling defenition
     POOL = nn.MaxPool2d(4)
     args.bs = 512
+    #load in the data
     data_loader = mnist_usps(args)
+    #create k means mini batch object
     kmeans = sk.MiniBatchKMeans(10,max_iter=1000,batch_size=args.bs)
     len_image_0 = len(data_loader[0])
     len_image_1 = len(data_loader[1])
+    #walk through the  whole dataset 1 time
     for step in range(int(60000/args.bs)):
         if step % len_image_0 == 0:
             iter_image_0 = iter(data_loader[0])
         if step % len_image_1 == 0:
             iter_image_1 = iter(data_loader[1])
-            
-        image_0, _ = iter_image_0.__next__()
+        #load in the image and pool it down
+        image_0, a = iter_image_0.__next__()
         image_1, _ = iter_image_1.__next__()
         image_0 = POOL(image_0)
         image_1 = POOL(image_1)
+        #reshape in to 2d
         image_0 = image_0.reshape(args.bs,-1)
         image_1 = image_1.reshape(args.bs,-1)
+        #run the kmeans on both datasets
         kmeans = kmeans.partial_fit(image_0)
         kmeans = kmeans.partial_fit(image_1)
         if step % 10 == 0:
             print(step, int(60000/args.bs))
+            
+    #save cluster centers in txt
     clusters = kmeans.cluster_centers_
-    open("/save/centers_Rmnist.txt", "w")
-    file = open("/save/centers_Rmnist.txt", "a")
+    open("kmeans.txt", "w")
+    file = open("kmeans.txt", "a")
     for i in range(len(clusters)):
         file.writelines([str(item)+" " for item in clusters[i]])
         file.writelines("\n")
-
+        
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

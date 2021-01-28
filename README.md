@@ -17,12 +17,35 @@ conda env create -f environment.yml
 conda activate DFC
 ```
 
-
-
 To view the notebook that runs the results do:
 ```bash
 jupyter notebook results.ipynb
 ```
+
+If you want to do your own training on the datasets you can use:
+```bash
+ main.py [-h] [--bs BS] [--k K] [--lr LR] [--iters ITERS]
+               [--test_interval TEST_INTERVAL] [--adv_mult ADV_MULT]
+               [--coeff_fair COEFF_FAIR] [--coeff_par COEFF_PAR] [--gpu GPU]
+               [--seed SEED] [--corrupted CORRUPTED]
+               [--corrupted_set CORRUPTED_SET] [--dataset DATASET]
+               [--divergence DIVERGENCE]
+```
+Some of the more notable arguments are divergence which allows the user to set 
+one of the following 3 divergence functions: KS,JS,CS.
+
+Further more we have the --dataset which allows the user to choose between:
+Rmnist and usps
+
+lastly the --corrupted_set allows which part of the dataset is to be corrupted
+and the --corrupted the amount by which this is done.
+
+If things are still unclear with the arguments you can always 
+```bash
+run python main.py --help
+```
+
+
 ## Reference
     @InProceedings{Li_2020_CVPR,
     author = {Li, Peizhao and Zhao, Han and Liu, Hongfu},

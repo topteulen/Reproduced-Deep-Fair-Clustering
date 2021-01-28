@@ -1,14 +1,15 @@
 # @Author  : Peizhao Li
 # @Contact : peizhaoli05@gmail.com
-
+"""
+Implementation of the AdversarialNetwork and different components
+needed for this network. Also the cluster assignment code is implemented here
+"""
 import numpy as np
 from collections import OrderedDict
-
 import torch
 from torch import nn
 from torch.nn import Parameter
 from torchvision import models
-
 from utils import init_weights
 
 
@@ -24,6 +25,7 @@ def grl_hook(coeff):
 
 
 def adv_loss(features, ad_net):
+    "calculate the adversial loss"
     ad_out = ad_net(features)
     batch_size = ad_out.size(0) // 2
     dc_target = torch.from_numpy(np.array([[1]] * batch_size + [[0]] * batch_size)).float().cuda()
@@ -31,6 +33,7 @@ def adv_loss(features, ad_net):
 
 
 class Encoder(nn.Module):
+    "Encoder part of the AdversarialNetwork"
     def __init__(self):
         super(Encoder, self).__init__()
 
@@ -60,6 +63,7 @@ class Encoder(nn.Module):
                 nn.init.normal_(m.weight, 1.0, 0.02)
 
     def reparameterize(self, mu, logvar):
+        "reparameteriation trick since network was orignialy VAE"
         if self.training:
             std = logvar.mul(0.5).exp_()
             eps = std.data.new(std.size()).normal_()
@@ -157,6 +161,7 @@ class DFC(nn.Module):
 
 
 class AdversarialNetwork(nn.Module):
+    "the AdversarialNetwork it self"
     def __init__(self, in_feature, hidden_size, max_iter, lr_mult):
         super(AdversarialNetwork, self).__init__()
         self.ad_layer1 = nn.Linear(in_feature, hidden_size)

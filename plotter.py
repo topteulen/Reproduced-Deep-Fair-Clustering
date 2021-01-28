@@ -1,3 +1,6 @@
+"""
+obsolete plotting function code
+"""
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,7 +30,6 @@ def plotter(plotlist,name):
     for i in range(len(plotlist)):
         plt.plot(plotlist[i],label=cases[i])
     plt.title(str(name) + " per category of corruption")
-    #plt.yticks(np.arange(0, 1.2, step=0.2))
     plt.legend()  
     plt.show()
 plotter(accuracies,"accuracies")

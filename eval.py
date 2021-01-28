@@ -1,12 +1,19 @@
 # @Author  : Peizhao Li
 # @Contact : peizhaoli05@gmail.com
-
+"""
+This module is used to evalutate te preformance of the model.
+This is done for accuracy,balance and entropy 
+in each of their respective functions
+"""
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 import torch
 
 
 def predict(data_loader, encoder, dfc):
+    """
+    gets the prediction of the DFC model.
+    """
     features = []
     labels = []
     encoder.eval()
@@ -52,6 +59,10 @@ def cluster_accuracy(y_true, y_predicted, cluster_number=None):
 
 
 def entropy(input):
+    """
+    calculates the entropy score 
+    :param input: tensor for which entropy needs to be calculated
+    """
     epsilon = 1e-5
     entropy = -input * torch.log(input + epsilon)
     entropy = torch.sum(entropy, dim=0)
@@ -59,6 +70,12 @@ def entropy(input):
 
 
 def balance(predicted, size_0, k=10):
+    """
+    calculates the balance score of a model output_0
+    :param predicted: tensor with the model predictions
+    :param size_0: size of sample
+    :param k: amount of clusters
+    """
     count = torch.zeros((k, 2))
     for i in range(size_0):
         count[predicted[i], 0] += 1

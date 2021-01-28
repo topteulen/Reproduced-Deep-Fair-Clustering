@@ -45,7 +45,7 @@ If things are still unclear with the arguments you can always
 run python main.py --help
 ```
 
-###Results 
+### Results 
 here are some results that you should be able to reproduce when running the notebook
 
 ![corruption](/save/corruption.png)

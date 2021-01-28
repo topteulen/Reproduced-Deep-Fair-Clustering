@@ -45,7 +45,13 @@ If things are still unclear with the arguments you can always
 run python main.py --help
 ```
 
+###Results 
+here are some results that you should be able to reproduce when running the notebook
 
+![corruption](/save/corruption.png)
+![cluster](/save/cluster.png)
+![divergence](/save/divergence.png)
+![reproducability](/save/reproducability.png)
 ## Reference
     @InProceedings{Li_2020_CVPR,
     author = {Li, Peizhao and Zhao, Han and Liu, Hongfu},

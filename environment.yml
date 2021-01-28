@@ -1,0 +1,26 @@
+name: DFC
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+    - pip=20.2.4
+    - jupyter=1.0.0
+    - numpy=1.18.*
+    - scikit-learn=0.21.3
+    - pytorch=1.5.*
+    - torchvision=0.6.*
+    - pillow=7.1.*
+    - scipy=1.4.*
+    - matplotlib=3.1.*
+    - pytorch-lightning=1.1.*
+    - pip:
+        - pytorch-lightning==1.0.3
+        - jupyter==1.0.0
+        - numpy==1.18.*
+        - scikit-learn==0.21.3
+        - pytorch==1.7.1
+        - torchvision==0.6.*
+        - pillow==7.1.*
+        - scipy==1.4.*
+        - matplotlib==3.1.*

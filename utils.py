@@ -102,7 +102,7 @@ def K_means(args):
         if step % len_image_1 == 0:
             iter_image_1 = iter(data_loader[1])
         #load in the image and pool it down
-        image_0, a = iter_image_0.__next__()
+        image_0, _ = iter_image_0.__next__()
         image_1, _ = iter_image_1.__next__()
         image_0 = POOL(image_0)
         image_1 = POOL(image_1)

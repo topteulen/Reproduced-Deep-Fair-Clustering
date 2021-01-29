@@ -3,7 +3,8 @@
 Peizhao Li, Han Zhao, and Hongfu Liu. "[Deep Fair Clustering for Visual Learning](https://openaccess.thecvf.com/content_CVPR_2020/html/Li_Deep_Fair_Clustering_for_Visual_Learning_CVPR_2020_paper.html)", CVPR 2020.
 
 ### Prerequisites
-Anaconda: https://www.anaconda.com/distribution/
+- Anaconda: https://www.anaconda.com/distribution/
+- NVIDIA Cuda compatible GPU 
 
 ### Getting Started
 First, open the Anaconda prompt, clone the entire repository and move to this directory:
@@ -46,15 +47,19 @@ run python main.py --help
 The following results should be reproducable when running the notebook:
 
 Results reproduced:
+
 ![reproducability](/save/reproducability.png)
 
 Results corrupted sensitive attribute:
+
 ![corruption](/save/corruption.png)
 
 Results pretrained cluster centers:
+
 ![cluster](/save/cluster.png)
 
 Results divergence functions:
+
 ![divergence](/save/divergence.png)
 
 
